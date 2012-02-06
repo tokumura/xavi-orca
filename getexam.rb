@@ -67,23 +67,18 @@ def requestApi(classNo, reqxml)
       $apires = res.body
       $xml = LibXML::XML::Document.string($apires)
     }
+
 =begin
-
     @filename = './res/' + classNo + "_" + $date +  '.xml'
-
     File.open(@filename, 'w') {|f|
       f.write res.body
     }
-
-    #print("xml start \r\n")
     @uri = open(@filename) do |f|
       f.read
     end
     }
-
     $xml = LibXML::XML::Document.string(@uri)
     $xml.save(@filename, :indent => true, :encoding => LibXML::XML::Encoding::UTF_8)
-
 =end
 
 end
@@ -166,19 +161,26 @@ if File.exist?($csvName)
 end
 
 
-$ptbf = ""
-$strerr = "error"
-#$inc = 0
+$idx = 0
 $rowcount = 0
-CSV.open("test2.csv", "r") do |row|
+CSV.open("test.csv", "r") do |row|
   $rowcount = $rowcount + 1
 end
-$inc = 100.0 / $rowcount
-p $rowcount
-p $inc
-$pbar = ProgressBar.new("test", 100, $stderr)
 
-CSV.open("test2.csv", "r") do |row|
+$ptime = $rowcount * 3.5 / 60
+$inc = 1
+$pbar = ProgressBar.new("now getting.", $rowcount.to_i)
+
+now = DateTime.now
+str = now.strftime("開始時刻:%Y年 %m月 %d日 %H時 %M分")
+puts str
+endtime = now + Rational($ptime.to_i, 24*60)
+str = endtime.strftime("終了時刻:%Y年 %m月 %d日 %H時 %M分 (予定)")
+puts str
+
+CSV.open("test.csv", "r") do |row|
+  $idx = $idx + 1
+  #p $idx
   $ptId = row[0]
   $date = row[1].to_s
   $date = $date[0..3] + "/" + $date[4..5] + "/" + $date[6..7]
@@ -191,6 +193,7 @@ CSV.open("test2.csv", "r") do |row|
   $ptbf = $ptId
   $pbar.inc($inc)
 end
+$pbar.finish
 
 =begin
   p $ptId
