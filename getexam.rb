@@ -4,7 +4,7 @@ require 'uri'
 require 'net/http'
 require 'rubygems'
 require 'xml/libxml'
-#require 'progressbar'
+require 'progressbar'
 require 'date'
 require 'csv'
 
@@ -19,6 +19,7 @@ CONTENT_TYPE = "application/xml"
 $body = ""
 $date = ""
 $csvName = "./examList"
+$apires = ""
 
 def setBody(id, dt, sq, insNum)
     $body = <<-EOS
@@ -60,10 +61,13 @@ def requestApi(classNo, reqxml)
     req.body = reqxml
     req.basic_auth(USER, PASSWD)
 
-    system("date")
     Net::HTTP.start(HOST, PORT) {|http|
-    res = http.request(req)
-    system("date")
+      res = http.request(req)
+
+      $apires = res.body
+      $xml = LibXML::XML::Document.string($apires)
+    }
+=begin
 
     @filename = './res/' + classNo + "_" + $date +  '.xml'
 
@@ -80,7 +84,8 @@ def requestApi(classNo, reqxml)
     $xml = LibXML::XML::Document.string(@uri)
     $xml.save(@filename, :indent => true, :encoding => LibXML::XML::Encoding::UTF_8)
 
-    #puts "requestApi end!"
+=end
+
 end
 
 def makeExamCsv()
@@ -90,7 +95,7 @@ def makeExamCsv()
     listH = [""]
     listF = [""]
 
-    csv.concat("### " + $date + " ###" + "\r\n")
+    csv.concat("{" + $ptId + "," + $insNum + "," + $seq + "," + $date + "}" + "\r\n")
 
     $xml.root.find( '/data/record/record/array/record/array/record' ).each do |elem|
       
@@ -146,27 +151,45 @@ end
 #
 #  REQUIRED : 必須   IMPLIED : 任意
 
+system("date")
+
 #puts "診療科コードを入力してください(例:01)"
 #$dipCode = gets.chomp
 $dipCode = "01"
-puts "患者番号の桁数を入力して下さい"
+#puts "患者番号の桁数を入力して下さい"
 #$idLen = gets.chomp
-puts "10"
-$idLen = "10"
+#puts "10"
+$idLen = "5"
 
 if File.exist?($csvName)
   File.delete($csvName)
 end
 
-CSV.open("test.csv", "r") do |row|
+
+$ptbf = ""
+$strerr = "error"
+#$inc = 0
+$rowcount = 0
+CSV.open("test2.csv", "r") do |row|
+  $rowcount = $rowcount + 1
+end
+$inc = 100.0 / $rowcount
+p $rowcount
+p $inc
+$pbar = ProgressBar.new("test", 100, $stderr)
+
+CSV.open("test2.csv", "r") do |row|
   $ptId = row[0]
   $date = row[1].to_s
-  $date = $date[0..3] + "-" + $date[4..5] + "-" + $date[6..7]
+  $date = $date[0..3] + "/" + $date[4..5] + "/" + $date[6..7]
   $insNum = row[2]
   $seq = row[3]
   setBody($ptId, $date, $seq, $insNum)
   requestApi("2", $body)
   makeExamCsv()
+  $apires = ""
+  $ptbf = $ptId
+  $pbar.inc($inc)
 end
 
 =begin
@@ -176,6 +199,7 @@ end
   p $seq
 =end
 
+system("date")
 puts "finish"
 
 
