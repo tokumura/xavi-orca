@@ -192,6 +192,7 @@ CSV.open("test.csv", "r") do |row|
   $apires = ""
   $ptbf = $ptId
   $pbar.inc($inc)
+  system("rm /tmp/blob/*")
 end
 $pbar.finish
 
