@@ -1,14 +1,15 @@
+# coding: utf-8
 #!/usr/bin/ruby
 
 require 'uri'
 require 'net/http'
 require 'rubygems'
-require 'xml/libxml'
+require 'libxml'
 require 'progressbar'
 require 'date'
-require 'csv'
+require "csv"
 
-Net::HTTP.version_1_1
+#Net::HTTP.version_1_1
 
 HOST = "localhost"
 PORT = "8000"
@@ -154,7 +155,7 @@ $dipCode = "01"
 #puts "患者番号の桁数を入力して下さい"
 #$idLen = gets.chomp
 #puts "10"
-$idLen = "5"
+$idLen = "8"
 
 if File.exist?($csvName)
   File.delete($csvName)
@@ -163,13 +164,14 @@ end
 
 $idx = 0
 $rowcount = 0
-CSV.open("test.csv", "r") do |row|
+CSV.foreach("jyurrk.csv") do |row|
   $rowcount = $rowcount + 1
 end
 
 $ptime = $rowcount * 3.5 / 60
 $inc = 1
-$pbar = ProgressBar.new("now getting.", $rowcount.to_i)
+
+puts $rowcount.to_s + "件"
 
 now = DateTime.now
 str = now.strftime("開始時刻:%Y年 %m月 %d日 %H時 %M分")
@@ -178,7 +180,9 @@ endtime = now + Rational($ptime.to_i, 24*60)
 str = endtime.strftime("終了時刻:%Y年 %m月 %d日 %H時 %M分 (予定)")
 puts str
 
-CSV.open("test.csv", "r") do |row|
+$pbar = ProgressBar.new("now getting.", $rowcount.to_i)
+
+CSV.foreach("jyurrk.csv") do |row|
   $idx = $idx + 1
   #p $idx
   $ptId = row[0]
@@ -192,7 +196,7 @@ CSV.open("test.csv", "r") do |row|
   $apires = ""
   $ptbf = $ptId
   $pbar.inc($inc)
-  system("rm /tmp/blob/*")
+  system("rm -f /tmp/blob/*")
 end
 $pbar.finish
 

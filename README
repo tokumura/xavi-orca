@@ -1,1 +1,5 @@
-first commit to github.
+ruby version 1.9.3
+
+rubygems
+  libxml-ruby
+  progressbar

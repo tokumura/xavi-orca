@@ -32,7 +32,7 @@ echo '受信履歴データの取得中です・・・'
 JYURRK_ARRY=()
 for TARGET in ${PTNUM_ARRY[*]}
 do
-    JYURRKS=`psql -q -t -A -d orca -F, <<_EOF
+    JYURRKS=`psql -q -t -A -U orca -d orca -F, <<_EOF
     SELECT trim(n.ptnum),j.sryymd,j.hkncombinum,j.rennum FROM tbl_jyurrk j,tbl_ptnum n WHERE j.ptid=n.ptid and n.ptnum = '$TARGET' and j.edanum = 1 and j.sryymd >= '$STARTDATE' and j.sryymd <= '$ENDDATE' ORDER BY j.sryymd
 _EOF`
 
