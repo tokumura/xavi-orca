@@ -189,6 +189,9 @@ CSV.foreach("jyurrk.csv") do |row|
   $date = row[1].to_s
   $date = $date[0..3] + "/" + $date[4..5] + "/" + $date[6..7]
   $insNum = row[2]
+  if $insNum == "9999"
+    $insNum = ""
+  end
   $seq = row[3]
   setBody($ptId, $date, $seq, $insNum)
   requestApi("2", $body)
